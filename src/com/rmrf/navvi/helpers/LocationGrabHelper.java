@@ -22,29 +22,29 @@ public class LocationGrabHelper {
 		myLocationManager = aLocationManager;
 		isLocationBeingDetected = true;
 		observer = anObserver;
-		listener = new LocationListener() {
-			public void onLocationChanged(Location location) {
-				myCurrentLocation = location;
-				isLocationAvailable = true;
-				observer.locationDetected(location);
-				stopDetection();
-			}
-
-			public void onProviderEnabled(String provider) {
-				isLocationAvailable = false;
-			}
-
-			public void onProviderDisabled(String provider) {
-				isLocationAvailable = false;
-				isLocationBeingDetected = false;
-			}
-
-			@Override
-			public void onStatusChanged(String provider, int status,
-					Bundle extras) {
-				// TODO Auto-generated method stu
-			}
-		};
+//		listener = new LocationListener() {
+//			public void onLocationChanged(Location location) {
+//				myCurrentLocation = location;
+//				isLocationAvailable = true;
+//				observer.locationDetected(location);
+//				stopDetection();
+//			}
+//
+//			public void onProviderEnabled(String provider) {
+//				isLocationAvailable = false;
+//			}
+//
+//			public void onProviderDisabled(String provider) {
+//				isLocationAvailable = false;
+//				isLocationBeingDetected = false;
+//			}
+//
+//			@Override
+//			public void onStatusChanged(String provider, int status,
+//					Bundle extras) {
+//				// TODO Auto-generated method stu
+//			}
+//		};
 
 	}
 
@@ -58,8 +58,10 @@ public class LocationGrabHelper {
 	}
 
 	public void listenForLocation() {
-		myLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-				0, 0, listener);
+//		myLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+//				0, 0, listener);
+		
+		observer.locationDetected(null);
 	}
 
 	public Location getLocation() {
@@ -75,6 +77,6 @@ public class LocationGrabHelper {
 	}
 
 	public void stopDetection() {
-		myLocationManager.removeUpdates(listener);
+		//myLocationManager.removeUpdates(listener);
 	}
 }

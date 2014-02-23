@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.widget.TextView;
 
+import com.rmrf.navvi.helpers.BeaconDataHelper;
 import com.rmrf.navvi.helpers.LocationGrabHelper;
 
 public class MainActivity extends Activity implements LocationObserver {
@@ -20,6 +21,7 @@ public class MainActivity extends Activity implements LocationObserver {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		
 		myLocationGrabber = LocationGrabHelper.getInstance(
 				(LocationManager) this
 						.getSystemService(Context.LOCATION_SERVICE), this);
@@ -56,8 +58,8 @@ public class MainActivity extends Activity implements LocationObserver {
 	public void locationDetected(Location location) {
 		Intent locationIntent = new Intent(getApplicationContext(),
 				LocationActivity.class);
-		locationIntent.putExtra("latitude", location.getLatitude());
-		locationIntent.putExtra("longitude", location.getLongitude());
+		locationIntent.putExtra("latitude", 125.5);
+		locationIntent.putExtra("longitude", 125.5);
 		startActivityForResult(locationIntent, 0);
 	}
 }

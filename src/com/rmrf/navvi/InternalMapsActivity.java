@@ -1,22 +1,26 @@
 package com.rmrf.navvi;
 
+import java.util.Collection;
+
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothManager;
-import android.content.Context;
-import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.RemoteException;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.radiusnetworks.ibeacon.IBeacon;
+import com.radiusnetworks.ibeacon.IBeaconConsumer;
+import com.radiusnetworks.ibeacon.IBeaconManager;
+import com.radiusnetworks.ibeacon.RangeNotifier;
+import com.radiusnetworks.ibeacon.Region;
 import com.rmrf.navvi.util.SystemUiHider;
 
 /**
@@ -25,7 +29,7 @@ import com.rmrf.navvi.util.SystemUiHider;
  * 
  * @see SystemUiHider
  */
-public class InternalMapsActivity extends Activity {
+public class InternalMapsActivity extends Activity implements IBeaconConsumer{
 
 	private static final boolean AUTO_HIDE = true;
 	private static final int AUTO_HIDE_DELAY_MILLIS = 3000;
@@ -34,19 +38,16 @@ public class InternalMapsActivity extends Activity {
 	private SystemUiHider mSystemUiHider;
 
 	private String locationName;
-
-	private BluetoothAdapter bluetoothAdapter;
-	private boolean mScanning;
-	private Handler mHandler;
-
-	// Stops scanning after 10 seconds.
-	private static final long SCAN_PERIOD = 10000;
+	private IBeaconManager iBeaconManager = IBeaconManager.getInstanceForApplication(this);
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.activity_internalmaps);
+		iBeaconManager.setForegroundBetweenScanPeriod(5000L);
+		iBeaconManager.bind(this);
+		
 
 		Bundle bundle = getIntent().getExtras();
 		locationName = bundle.getString("name");
@@ -118,9 +119,8 @@ public class InternalMapsActivity extends Activity {
 		findViewById(R.id.imageView1).setOnTouchListener(
 				mDelayHideTouchListener);
 		new RetreiveImageTask().execute(locationName);
-		getBluetoothAdapter();
-		startListeningForDevicesOnBluetooth(true);
 	}
+
 
 	private void setImageBackground(Drawable drawable) {
 		if (drawable != null) {
@@ -198,53 +198,51 @@ public class InternalMapsActivity extends Activity {
 			setImageBackground(image);
 		}
 	}
+	
+	@Override 
+    protected void onDestroy() {
+        super.onDestroy();
+        iBeaconManager.unBind(this);
+    }
+    @Override 
+    protected void onPause() {
+    	super.onPause();
+    	if (iBeaconManager.isBound(this)) iBeaconManager.setBackgroundMode(this, true);    		
+    }
+    @Override 
+    protected void onResume() {
+    	super.onResume();
+    	if (iBeaconManager.isBound(this)) iBeaconManager.setBackgroundMode(this, false);    		
+    }
+	
+    private void logToDisplay(final String line) {
+    	runOnUiThread(new Runnable() {
+    	    public void run() {
+    	    	//EditText editText = (EditText)findViewById(R.id.fullscreen_content);
+    	    	System.out.println("**Received new line " + line);
+       	    	//editText.append(line+"\n");            	    	    		
+    	    }
+    	});
+    }
+    
+	@Override
+	public void onIBeaconServiceConnect() {
+		logToDisplay("Received and started ble");
+		
+		iBeaconManager.setRangeNotifier(new RangeNotifier() {
+            @Override 
+            public void didRangeBeaconsInRegion(Collection<IBeacon> iBeacons, Region region) {
+                if (iBeacons.size() > 0) {
+                	logToDisplay("The first iBeacon I see is about "+iBeacons.iterator().next().getAccuracy()+" meters away.");            	
+                }
+            }
 
-	private void getBluetoothAdapter() {
-		final BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
-		bluetoothAdapter = bluetoothManager.getAdapter();
-		if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled()) {
-			Intent enableBtIntent = new Intent(
-					BluetoothAdapter.ACTION_REQUEST_ENABLE);
-			startActivityForResult(enableBtIntent, 0);
-		}
-	}
+            });
 
-	private void startListeningForDevicesOnBluetooth(final boolean enable) {
-		System.out.println("Started listening for bluetooth devices");
-		final BluetoothAdapter.LeScanCallback mLeScanCallback = new BluetoothAdapter.LeScanCallback() {
-			@Override
-			public void onLeScan(final BluetoothDevice device, int rssi,
-					byte[] scanRecord) {
-				runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						System.out.println("Found a device");
-						Toast toast = Toast.makeText(getApplicationContext(),
-								"Found a new device...", Toast.LENGTH_SHORT);
-						toast.show();
-					}
-				});
-			}
-		};
-		mHandler = new Handler();
-		if (enable) {
-			// Stops scanning after a pre-defined scan period.
-			mHandler.postDelayed(new Runnable() {
-				@Override
-				public void run() {
-					mScanning = false;
-					bluetoothAdapter.stopLeScan(mLeScanCallback);
-					System.out.println("Stopping the bluetooth scanner");
-				}
-			}, SCAN_PERIOD);
+            try {
+                iBeaconManager.startRangingBeaconsInRegion(new Region("myRangingUniqueId", null, null, null));
+            } catch (RemoteException e) {   }
 
-			mScanning = true;
-			bluetoothAdapter.startLeScan(mLeScanCallback);
-		} else {
-			mScanning = false;
-			bluetoothAdapter.stopLeScan(mLeScanCallback);
-		}
-
-	}
-
+    }
+		
 }

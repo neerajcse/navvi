@@ -19,7 +19,7 @@
         android:keepScreenOn="true"
         android:text="@string/dummy_content"
         android:textColor="#33b5e5"
-        android:textSize="50sp"
+        android:textSize="12sp"
         android:textStyle="bold" />
 
     <!--
