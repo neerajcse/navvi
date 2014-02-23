@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Navvi</string>
+    <string name="action_settings">Settings</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="serverbase">http://rmrfnavigation.appspot.com</string>
+    <string name="GrabLocation">Get Location</string>
+    <string name="waiting_message">Searching for Navvi\'s nearby</string>
+    <string name="title_activity_select_location">Select Location</string>
+    <string name="title_activity_location">Select Location</string>
+    <string name="title_activity_internal_maps">Internal Map</string>
+    <string name="dummy_content">Retrieving map...</string>
+
+</resources>
